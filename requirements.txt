@@ -1,0 +1,12 @@
+langchain-community==0.0.5  # Ensure compatibility with the used FAISS and HuggingFace modules
+langchain-huggingface==0.0.5  # For HuggingFaceEmbeddings and Pipeline
+transformers>=4.26.0  # For AutoModelForSeq2SeqLM, AutoTokenizer, and pipeline
+PyPDF2>=3.0.0  # For PDF parsing
+python-dotenv>=0.21.0  # For environment variable management
+faiss-cpu>=1.7.2  # For vector store management
+langchain-community
+langchain-huggingface
+transformers
+PyPDF2
+python-dotenv
+faiss-cpu
