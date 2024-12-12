@@ -1,5 +1,7 @@
 import os
 import logging
+import glob
+import shutil
 import PyPDF2
 from typing import List, Dict, Optional
 
@@ -115,24 +117,62 @@ class MultiCollegeRAGChatbot:
         """
         vectorstore_path = "vectorstore.faiss"
 
-        # Initialize embeddings
-        embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
+        # Comprehensive file deletion approach
+        def delete_vector_store_files():
+            """Helper function to delete vector store files"""
+            import glob
+            import shutil
 
-        # If retraining is forced, delete existing vector store
-        if force_retrain and os.path.exists(vectorstore_path):
-            os.remove(vectorstore_path)
-            self.logger.info("Deleted existing vector store. Retraining...")
+            # List of potential file patterns to delete
+            file_patterns = [
+                vectorstore_path,  # The main file
+                f"{vectorstore_path}.*",  # Any additional files with extensions
+                f"{vectorstore_path}_*"  # Any additional files with prefixes
+            ]
 
-        # Load existing vector store if it exists and retraining is not forced
-        if os.path.exists(vectorstore_path) and not force_retrain:
-            try:
-                self.vectorstore = FAISS.load_local(vectorstore_path, embeddings)
+            for pattern in file_patterns:
+                try:
+                    # Find all matching files
+                    matching_files = glob.glob(pattern)
+
+                    for file_path in matching_files:
+                        try:
+                            # Try different methods to remove the file
+                            if os.path.isdir(file_path):
+                                shutil.rmtree(file_path)
+                            else:
+                                os.remove(file_path)
+                            self.logger.info(f"Deleted: {file_path}")
+                        except PermissionError:
+                            self.logger.warning(f"Permission denied when deleting: {file_path}")
+                        except Exception as e:
+                            self.logger.error(f"Error deleting {file_path}: {e}")
+                except Exception as e:
+                    self.logger.error(f"Error processing pattern {pattern}: {e}")
+
+        # If force_retrain is True, delete existing vector store files
+        if force_retrain:
+            delete_vector_store_files()
+
+        # Rest of the method remains the same...
+        try:
+            embeddings = HuggingFaceEmbeddings(
+                model_name="sentence-transformers/all-MiniLM-L6-v2"
+            )
+        except Exception as e:
+            self.logger.error(f"Error initializing embeddings: {e}")
+            raise
+
+        # Try to load existing vector store
+        try:
+            if os.path.exists(vectorstore_path) and not force_retrain:
+                self.vectorstore = FAISS.load_local(vectorstore_path, embeddings, allow_dangerous_deserialization=False)
                 self.logger.info("Loaded vector store from file.")
                 return
-            except Exception as e:
-                self.logger.error(f"Failed to load vector store: {e}")
+        except Exception as e:
+            self.logger.warning(f"Could not load existing vector store: {e}")
 
-        # Ensure texts are extracted
+        # If no existing vector store or force_retrain is True, create new vector store
         if not self.extracted_texts:
             self.extract_text_from_pdfs()
 
@@ -149,15 +189,14 @@ class MultiCollegeRAGChatbot:
             chunks = text_splitter.split_text(text)
             all_chunks.extend(chunks)
 
-        # Create vector store
+        # Create vector store and save to file
         try:
             self.vectorstore = FAISS.from_texts(all_chunks, embeddings)
             self.vectorstore.save_local(vectorstore_path)
             self.logger.info(f"Vector store created with {len(all_chunks)} chunks and saved to file.")
         except Exception as e:
-            self.logger.error(f"Failed to create vector store: {e}")
-            self.vectorstore = None
-
+            self.logger.error(f"Error creating and saving vector store: {e}")
+            raise
     def classify_query(self, query: str) -> str:
         """
         Classify query into a specific category
