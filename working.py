@@ -305,6 +305,7 @@ class MultiCollegeRAGChatbot:
 
             response = self.get_response(query)
             print("\n📄 Bot Response:")
+            return response
             print(response)
 
 

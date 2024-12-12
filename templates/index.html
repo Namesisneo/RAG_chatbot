@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>University</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='webpage_styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='chatbot.css') }}">
+</head>
+<body>
+    <div class="navbar">
+        <div class="top-bar">
+            <div>
+                <a href="#">NEWS</a>
+                <a href="#">EVENTS</a>
+                <a href="#">CAREERS</a>
+                <a href="#">INFO FOR</a>
+            </div>
+            <div>
+                <a href="#">VISIT</a>
+                <a href="#">CONTACT US</a>
+                <a href="#">DIRECTORY</a>
+                <a href="#" class="search-icon">
+                    <img src="https://img.icons8.com/?size=100&id=95149&format=png&color=000000" alt="Search">
+                </a>
+            </div>
+        </div>
+        <div class="bottom-bar">
+            <div class="left-nav">
+                <a href="#">WHO WE ARE</a>
+                <a href="#">EDUCATION & RESEARCH</a>
+            </div>
+            <div class="logo">
+                <img src="../static/logo1.png" alt="Logo">
+            </div>
+            <div class="right-nav">
+                <a href="./index.html">DASHBOARD</a>
+                <a href="#">LIFE AT UNIVERSITY</a>
+                <a href="#">MEDICINE</a>
+                <a href="#" class="give-button">GIVE</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="header">
+        <img src="../static/image.png" alt="Campus Image">
+        <div class="overlay">
+            <h1>Welcome to Our University</h1>
+            <p>Empowering Minds, Transforming Futures</p>
+        </div>
+    </div>
+
+    <!-- Chatbot Integration -->
+    <div id="chatbot-icon" onclick="toggleChatbot()">
+        <img src="https://img.icons8.com/ios-filled/50/ffffff/chat.png" alt="Chat Icon">
+    </div>
+    <div id="chatbot-container">
+        <div class="chatbot-header">
+            <span>TechEase</span>
+            <button onclick="toggleChatbot()">&times;</button>
+        </div>
+        <ul class="query-buttons">
+            <li>📚 Admission Query</li>
+            <li>🎓 Post Admission Query</li>
+            <li>👨‍🎓 Existing Student</li>
+            <li>📅 Other Query</li>
+        </ul>
+        <div class="chatbot-body" id="chatbody"></div>
+        <div id="listening-indicator" style="display: none; margin-left: 10px; color: #4a90e2;">Listening...</div>
+        <div class="chatbot-footer">
+            <button id="mic-button" onclick="startSpeechRecognition()">
+                <img src="https://img.icons8.com/?size=100&id=9622&format=png&color=FFFFFF" alt="Mic Icon">
+            </button>
+            <input type="text" id="chat-input" placeholder="Type your message...">
+            <button onclick="sendMessage()">
+                <img src="https://img.icons8.com/?size=100&id=xQTP8sSmgiYT&format=png&color=FFFFFF" alt="Send Icon">
+            </button>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='chatbot.js') }}"></script>
+</body>
+</html>

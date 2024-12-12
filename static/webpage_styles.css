@@ -1,0 +1,239 @@
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+}
+
+.navbar {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    border-bottom: 1px solid #ccc;
+    background-color: #f8f9fa;
+    padding: 0 20px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.top-bar {
+    background-color: #0056b3;
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    padding: 10px 20px;
+    font-size: 14px;
+    transition: background-color 0.3s;
+}
+
+.top-bar:hover {
+    background-color: #003d80;
+}
+
+.top-bar a {
+    color: white;
+    text-decoration: none;
+    margin: 0 10px;
+    transition: color 0.3s;
+}
+
+.top-bar a:hover {
+    color: #ffcc00;
+    text-decoration: underline;
+}
+
+.bottom-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: white;
+    width: 100%;
+    padding: 15px 20px;
+    position: relative;
+}
+
+.bottom-bar .left-nav,
+.bottom-bar .right-nav {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+}
+
+.bottom-bar .logo {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+}
+
+.bottom-bar .logo img {
+    height: 140px;
+    margin-right: 10px;
+    transition: transform 0.3s;
+}
+
+.bottom-bar .logo img:hover {
+    transform: scale(1.1);
+}
+
+.bottom-bar .logo h1 {
+    font-size: 20px;
+    margin: 0;
+    color: #0056b3;
+}
+
+.bottom-bar a {
+    color: #333;
+    text-decoration: none;
+    font-size: 16px;
+    position: relative;
+}
+
+.bottom-bar a:hover {
+    text-decoration: underline;
+    text-decoration-color: #0056b3;
+}
+
+.bottom-bar a::after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 2px;
+    background: #0056b3;
+    left: 50%;
+    bottom: -4px;
+    transition: all 0.3s;
+    transform: translateX(-50%);
+}
+
+.bottom-bar a:hover::after {
+    width: 100%;
+}
+
+.give-button {
+    border: 1px solid #0056b3;
+    color: #0056b3;
+    padding: 5px 15px;
+    text-decoration: none;
+    font-size: 16px;
+    border-radius: 5px;
+    transition: background-color 0.3s, color 0.3s, transform 0.3s;
+}
+
+.give-button:hover {
+    background-color: #0056b3;
+    color: white;
+    transform: translateY(-3px);
+}
+
+.search-icon img {
+    height: 32px;
+    transition: transform 0.3s;
+}
+
+.search-icon img:hover {
+    transform: scale(1.2);
+}
+
+.header {
+    position: relative;
+    text-align: center;
+    color: white;
+    margin-top: 40px;
+}
+
+.header img {
+    width: 100%;
+    height: auto;
+}
+
+.header .overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    color: white;
+}
+
+.header .overlay h1 {
+    font-size: 2.5rem;
+    font-weight: bold;
+    text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.7);
+    margin-bottom: 20px;
+    animation: fadeIn 1.5s ease;
+}
+
+.header .overlay p {
+    font-size: 1.2rem;
+    margin: 0;
+    animation: fadeIn 2s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .top-bar {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .bottom-bar {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .bottom-bar .logo {
+        position: relative;
+        left: 0;
+        transform: none;
+        margin-bottom: 10px;
+    }
+
+    .bottom-bar .left-nav,
+    .bottom-bar .right-nav {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .header .overlay h1 {
+        font-size: 2rem;
+    }
+
+    .header .overlay p {
+        font-size: 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .top-bar {
+        font-size: 12px;
+        padding: 5px 10px;
+    }
+
+    .bottom-bar a {
+        font-size: 14px;
+    }
+
+    .give-button {
+        padding: 5px 10px;
+        font-size: 14px;
+    }
+
+    .header .overlay h1 {
+        font-size: 1.5rem;
+    }
+
+    .header .overlay p {
+        font-size: 0.9rem;
+    }
+}

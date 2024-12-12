@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}">
+</head>
+<body>
+    <div class="dashboard">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="profile">INDEX</div>
+            <ul>
+                <li><a href="#">📊 Overview</a></li>
+                <li><a href="#">📄 Reports</a></li>
+                <li><a href="#">📈 Analytics</a></li>
+            </ul>
+        </div>
+
+        <!-- Main Content -->
+        <div class="content">
+            <div class="header">
+                <div class="title">Dashboard</div>
+                <div class="date-range" id="current-date"></div>
+            </div>
+            <div class="marquee">
+                "Modifications to this PDF are at your own risk; the original creator is not responsible for any changes or their consequences."
+            </div>
+            <div class="pdf-container" id="pdf-container">
+                <p>Drag and drop PDF files here</p>
+                <ul class="pdf-list" id="pdf-list"></ul>
+                <div class="pdf-buttons">
+                    <button id="add-pdf">Add PDF</button>
+                    <button id="delete-selected">Delete Selected</button>
+                </div>
+                <button class="save-button" id="save-pdf">Save</button>
+                <div class="flash-message" id="flash-message"></div>
+            </div>
+        </div>
+    </div>
+
+<script src="{{ url_for('static', filename='dashboard.js') }}"></script>
+</body>
+</html>

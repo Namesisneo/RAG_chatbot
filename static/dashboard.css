@@ -1,0 +1,179 @@
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f4f6f9;
+    margin: 0;
+    padding: 0;
+}
+
+.dashboard {
+    display: grid;
+    grid-template-columns: 250px auto;
+    grid-gap: 20px;
+    padding: 20px;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.sidebar {
+    background-color: #ffffff;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    position: sticky;
+    top: 20px;
+    height: calc(100vh - 40px);
+}
+
+.sidebar .profile {
+    font-size: 20px;
+    color: #0056b3;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.sidebar ul {
+    list-style: none;
+    padding: 0;
+}
+
+.sidebar ul li {
+    margin: 15px 0;
+}
+
+.sidebar ul li a {
+    text-decoration: none;
+    color: #333333;
+    font-size: 16px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    padding: 10px 15px;
+    border-radius: 8px;
+    transition: background-color 0.3s ease;
+}
+
+.sidebar ul li a:hover {
+    background-color: #f0f4ff;
+    color: #0056b3;
+}
+
+.content {
+    background-color: #ffffff;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.title {
+    font-size: 28px;
+    font-weight: bold;
+    color: #0056b3;
+}
+
+.date-range {
+    color: #666666;
+    font-weight: 500;
+}
+
+.marquee {
+    background-color: #eaf4ff;
+    color: #003366;
+    font-weight: 500;
+    padding: 10px 15px;
+    border-radius: 8px;
+    margin: 20px 0;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.pdf-container {
+    height: 300px;
+    padding: 20px;
+    background-color: #f9f9f9;
+    border: 2px dashed #0073e6;
+    border-radius: 10px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.pdf-container p {
+    font-size: 18px;
+    color: #333333;
+    margin: 10px 0;
+}
+
+.pdf-list {
+    margin: 10px 0;
+    padding: 0;
+    list-style: none;
+    width: 100%;
+}
+
+.pdf-list li {
+    display: flex;
+    align-items: center;
+    margin: 5px 0;
+    padding: 8px 12px;
+    background-color: #f1f1f1;
+    border-radius: 5px;
+    font-size: 16px;
+    color: #333;
+    justify-content: space-between;
+}
+
+.pdf-buttons {
+    margin-top: 15px;
+}
+
+.pdf-buttons button {
+    margin: 5px;
+    padding: 10px 20px;
+    background-color: #0073e6;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s ease;
+}
+
+.pdf-buttons button:hover {
+    background-color: #0056b3;
+}
+
+.save-button {
+    margin-top: 20px;
+    padding: 12px 25px;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+}
+
+.save-button:hover {
+    background-color: #218838;
+}
+
+.flash-message {
+    margin-top: 10px;
+    padding: 10px;
+    border-radius: 5px;
+    display: none;
+    font-size: 16px;
+    font-weight: bold;
+    text-align: center;
+}
