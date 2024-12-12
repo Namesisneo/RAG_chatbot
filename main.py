@@ -1,8 +1,7 @@
 import os
-import dotenv
-import PyPDF2
 import logging
-from typing import List, Optional
+import PyPDF2
+from typing import List, Dict, Optional
 
 from langchain_community.vectorstores import FAISS
 from langchain_huggingface import HuggingFaceEmbeddings
@@ -12,38 +11,21 @@ from langchain.chains import RetrievalQA
 from langchain_community.llms import HuggingFacePipeline
 from transformers import AutoModelForSeq2SeqLM, AutoTokenizer, pipeline
 
-model_name = "google/flan-t5-small"
-model = AutoModelForSeq2SeqLM.from_pretrained(model_name)
-tokenizer = AutoTokenizer.from_pretrained(model_name)
 
-os.environ['HF_HUB_DISABLE_SYMLINKS_WARNING'] = '1'
-# Or specify a specific cache directory
-# os.environ['TRANSFORMERS_CACHE'] = 'C:\\path\\to\\your\\cache\\directory'
-
-local_llm = HuggingFacePipeline(
-    pipeline=pipeline(
-        "text2text-generation",
-        model=model,
-        tokenizer=tokenizer
-    )
-)
-
-
-class PDFRAGChatbot:
+class MultiCollegeRAGChatbot:
     def __init__(self, pdf_directory: str):
         """
-        Initialize the PDF-based RAG Chatbot.
+        Initialize Multi-College RAG Chatbot
 
         Args:
-            pdf_directory (str): Directory containing PDF files.
+            pdf_directory (str): Directory containing college PDF documents
         """
         # Configure logging
-        logging.basicConfig(level=logging.INFO,
-                            format='%(asctime)s - %(levelname)s: %(message)s')
+        logging.basicConfig(
+            level=logging.INFO,
+            format='%(asctime)s - %(levelname)s: %(message)s'
+        )
         self.logger = logging.getLogger(__name__)
-
-        # Load environment variables
-        dotenv.load_dotenv()
 
         # Set paths and initialize attributes
         self.pdf_directory = pdf_directory
@@ -51,12 +33,42 @@ class PDFRAGChatbot:
         self.rag_chain = None
         self.extracted_texts = []
 
+        # Categorization keywords
+        self.category_keywords = {
+            "placements": ["placement", "job", "career", "recruit", "hire"],
+            "admission": ["admission", "entry", "apply", "eligibility", "criteria"],
+            "scholarship": ["scholarship", "fund", "financial", "support", "aid"],
+            "hostel": ["hostel", "accommodation", "residence", "dorm", "room"],
+            "academic": ["course", "program", "study", "curriculum", "academic"]
+        }
+
+        # Initialize LLM
+        self.initialize_llm()
+
+    def initialize_llm(self):
+        """
+        Initialize local language model
+        """
+        model_name = "google/flan-t5-small"
+        model = AutoModelForSeq2SeqLM.from_pretrained(model_name)
+        tokenizer = AutoTokenizer.from_pretrained(model_name)
+
+        self.local_llm = HuggingFacePipeline(
+            pipeline=pipeline(
+                 "text2text-generation",
+                    model=model,
+                    tokenizer=tokenizer,
+                    max_length=1024,  # Increase max tokens in output
+                    truncation=True
+            )
+        )
+
     def extract_text_from_pdfs(self) -> List[str]:
         """
-        Extract text from all PDF files in the specified directory.
+        Extract text from all PDF files in the specified directory
 
         Returns:
-            List[str]: Extracted text from PDFs
+            List of extracted text from PDFs
         """
         self.logger.info(f"Extracting text from PDFs in {self.pdf_directory}")
         texts = []
@@ -79,6 +91,10 @@ class PDFRAGChatbot:
                         for page in pdf_reader.pages:
                             pdf_text += page.extract_text() + "\n"
 
+                        # Add college name from filename
+                        college_name = filename.replace('.pdf', '').strip()
+                        pdf_text = f"[COLLEGE: {college_name}]\n{pdf_text}"
+
                         texts.append(pdf_text)
                         self.logger.info(f"Processed: {filename}")
 
@@ -89,36 +105,34 @@ class PDFRAGChatbot:
         return texts
 
     def create_vector_store(self, chunk_size: int = 500, chunk_overlap: int = 100, force_retrain: bool = False):
+        """
+        Create or load a vector store from extracted PDF texts.
+
+        Args:
+            chunk_size (int): Size of text chunks for embedding
+            chunk_overlap (int): Overlap between text chunks
+            force_retrain (bool): If True, retrain and overwrite the vector store.
+        """
         vectorstore_path = "vectorstore.faiss"
 
         # Initialize embeddings
-        try:
-            embeddings = HuggingFaceEmbeddings(
-                model_name="sentence-transformers/all-MiniLM-L6-v2"
-            )
-        except Exception as e:
-            self.logger.error(f"Error initializing embeddings: {e}")
-            raise
+        embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
 
         # If retraining is forced, delete existing vector store
         if force_retrain and os.path.exists(vectorstore_path):
-            try:
-                os.remove(vectorstore_path)
-                self.logger.info("Existing vector store deleted. Retraining...")
-            except PermissionError:
-                self.logger.error("Could not delete existing vector store. Check file permissions.")
-                raise
+            os.remove(vectorstore_path)
+            self.logger.info("Deleted existing vector store. Retraining...")
 
-        # Load existing vector store if not forcing retraining
-        try:
-            if os.path.exists(vectorstore_path) and not force_retrain:
+        # Load existing vector store if it exists and retraining is not forced
+        if os.path.exists(vectorstore_path) and not force_retrain:
+            try:
                 self.vectorstore = FAISS.load_local(vectorstore_path, embeddings)
                 self.logger.info("Loaded vector store from file.")
                 return
-        except Exception as e:
-            self.logger.error(f"Error loading vector store: {e}")
-            # If loading fails, we'll create a new vector store
+            except Exception as e:
+                self.logger.error(f"Failed to load vector store: {e}")
 
+        # Ensure texts are extracted
         if not self.extracted_texts:
             self.extract_text_from_pdfs()
 
@@ -135,65 +149,100 @@ class PDFRAGChatbot:
             chunks = text_splitter.split_text(text)
             all_chunks.extend(chunks)
 
-        # Create vector store and save to file
+        # Create vector store
         try:
             self.vectorstore = FAISS.from_texts(all_chunks, embeddings)
             self.vectorstore.save_local(vectorstore_path)
             self.logger.info(f"Vector store created with {len(all_chunks)} chunks and saved to file.")
         except Exception as e:
-            self.logger.error(f"Error creating and saving vector store: {e}")
-            raise
+            self.logger.error(f"Failed to create vector store: {e}")
+            self.vectorstore = None
 
-    def create_rag_chain(self):
+    def classify_query(self, query: str) -> str:
         """
-        Create the RAG retrieval chain.
+        Classify query into a specific category
+        """
+        query_lower = query.lower()
+
+        for category, keywords in self.category_keywords.items():
+            if any(keyword in query_lower for keyword in keywords):
+                return category
+
+        return 'general'
+
+    def create_rag_chain(self, category: str):
+        """
+        Create RAG chain for specific query category
         """
         if self.vectorstore is None:
             self.create_vector_store()
 
-        # Prompt template
-        review_template_str = """You are a helpful assistant analyzing PDF documents. 
-        Provide detailed and accurate information based on the following context. 
-        If the information is not in the context, say you don't have specific details.
+        # Customized prompt templates for different categories
+        category_templates = {
+            "placements": """
+            Focus on placement-related information. 
+            Provide details about job opportunities, recruitment process, 
+            and placement statistics for the college.
 
-        Context:
-        {context}
+            Context: {context}
+            Question: {question}
+            Detailed Answer:""",
 
-        Question: {question}
-        Helpful Answer:"""
+            "admission": """
+            Provide comprehensive admission guidelines. 
+            Include eligibility criteria, application process, 
+            important dates, and required documents.
+
+            Context: {context}
+            Question: {question}
+            Detailed Answer:""",
+
+            "general": """
+            Provide a comprehensive overview of the college 
+            based on the available information.
+
+            Context: {context}
+            Question: {question}
+            Informative Answer:"""
+        }
+
+        # Select appropriate template
+        template = category_templates.get(category, category_templates['general'])
 
         qa_prompt = PromptTemplate(
-            template=review_template_str,
+            template=template,
             input_variables=["context", "question"]
         )
 
-        # Create RAG chain using local LLM
+        # Create RAG chain
         self.rag_chain = RetrievalQA.from_chain_type(
-            llm=local_llm,
-            retriever=self.vectorstore.as_retriever(search_kwargs={"k": 3}),
+            llm=self.local_llm,
+            retriever=self.vectorstore.as_retriever(
+                search_kwargs={
+                    "k": 5,  # Retrieve top 5 most relevant chunks
+                    "search_type": "similarity"
+                }
+            ),
             chain_type="stuff",
             chain_type_kwargs={"prompt": qa_prompt}
         )
 
-    def get_response(self, question: str) -> Optional[str]:
+    def get_response(self, query: str) -> str:
         """
-        Get a response from the RAG chain.
-
-        Args:
-            question (str): User's query
-
-        Returns:
-            Optional[str]: Bot's response
+        Get response for the given query
         """
-        if self.rag_chain is None:
-            self.create_rag_chain()
+        # Classify query
+        category = self.classify_query(query)
+
+        # Create appropriate RAG chain
+        self.create_rag_chain(category)
 
         try:
-            response = self.rag_chain.invoke({"query": question})
-            return response.get('result', "I couldn't find a relevant answer.")
+            response = self.rag_chain.invoke({"query": query})
+            return response.get('result', "I couldn't find specific information.")
         except Exception as e:
             self.logger.error(f"Error generating response: {e}")
-            return f"An error occurred: {str(e)}"
+            return "An error occurred while processing your query."
 
     def interactive_chat(self):
         """
@@ -221,11 +270,12 @@ class PDFRAGChatbot:
 
 
 def main():
-    # Example usage
-    pdf_dir = 'pdfs'  # Directory containing your PDF files
-    chatbot = PDFRAGChatbot(pdf_dir)
+    # Specify directory containing college PDFs
+    pdf_dir = 'pdfs'
+    chatbot = MultiCollegeRAGChatbot(pdf_dir)
 
-    # Optional: Prepare vector store beforehand
+    # Prepare vector store
+    # chatbot.create_vector_store(chunk_size=500, chunk_overlap=100, force_retrain=True)
     chatbot.create_vector_store()
 
     # Start interactive chat
